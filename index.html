@@ -1,1 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Blog Post</title>
+    <link rel="stylesheet" href="styles.css">
 
+    <!-- Firebase SDK (Fixes "firebase is not defined" issue) -->
+    <script defer src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to My Blog</h1>
+        <p>This is a simple blog post with a page view counter.</p>
+        <p>Page Views: <span id="pageViews">Loading...</span></p>
+    </div>
+    
+    <script>
+        document.addEventListener("DOMContentLoaded", async function () {
+            const viewCountElement = document.getElementById("pageViews");
+            
+            // Enable Firebase
+            const useFirebase = true; 
+            
+            if (useFirebase) {
+                // Firebase Configuration (Replace with your Firebase details)
+                const firebaseConfig = {
+                    apiKey: "AIzaSyAH39XmuKTb6-j1dLybAiQiy1enDzYTkFA",
+                    authDomain: "blogpost-dd74b.firebaseapp.com",
+                    projectId: "blogpost-dd74b",
+                    storageBucket: "blogpost-dd74b.appspot.com",
+                    messagingSenderId: "1095125368505",
+                    appId: "1:1095125368505:web:f4393a968af5ccf6dee568",
+                    measurementId: "G-BRMHGFJBKN"
+                };
+
+                // Initialize Firebase
+                firebase.initializeApp(firebaseConfig);
+                const db = firebase.firestore();
+                const pageRef = db.collection("pageViews").doc("blogpost");
+                
+                try {
+                    const doc = await pageRef.get();
+                    if (doc.exists) {
+                        await pageRef.update({ count: firebase.firestore.FieldValue.increment(1) });
+                    } else {
+                        await pageRef.set({ count: 1 });
+                    }
+                    const updatedDoc = await pageRef.get();
+                    viewCountElement.innerText = updatedDoc.data().count;
+                } catch (error) {
+                    console.error("Error updating Firestore: ", error);
+                }
+            } else {
+                // Local Storage Fallback
+                let count = localStorage.getItem("pageViews") || 0;
+                count = parseInt(count) + 1;
+                localStorage.setItem("pageViews", count);
+                viewCountElement.innerText = count;
+            }
+        });
+    </script>
+</body>
+</html>
